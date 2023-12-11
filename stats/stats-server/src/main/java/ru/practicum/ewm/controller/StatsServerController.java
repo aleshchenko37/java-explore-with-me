@@ -23,9 +23,6 @@ public class StatsServerController {
     private final StatsServerService statsServerService;
 
     @PostMapping("/hit")
-    /**
-     * Сохранение информации о том, что на uri конкретного сервиса был отправлен запрос пользователем.
-     */
     public ResponseEntity<EndpointHit> saveHit(@RequestBody EndpointHit endpointHitDto) {
         endpointHitDto = statsServerService.saveEndpointHit(endpointHitDto);
         log.info("Добавлена новая информация о запросе: {}", endpointHitDto);
@@ -33,10 +30,6 @@ public class StatsServerController {
     }
 
     @GetMapping("/stats")
-    /**
-     *
-     Получение статистики по посещениям.
-     */
     public ResponseEntity<List<ViewStats>> getAllStats(
             @RequestParam @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime start,
             @RequestParam @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime end,
