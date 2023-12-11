@@ -103,5 +103,4 @@ class StatsServerServiceImplTest {
         verify(statsServerRepository, times(1))
                 .getAllStats(any(LocalDateTime.class), any(LocalDateTime.class));
     }
-
 }
