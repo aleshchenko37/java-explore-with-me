@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.ewm.dto.EndpointHit;
@@ -42,7 +43,11 @@ public class StatsClient {
                 .build();
         try {
             final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return gson.fromJson(response.body(), EndpointHit.class);
+            if (HttpStatus.valueOf(response.statusCode()).is2xxSuccessful()) {
+                return gson.fromJson(response.body(), EndpointHit.class);
+            } else {
+                throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
+            }
         } catch (IOException | InterruptedException e) {
             throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
         }
@@ -69,7 +74,11 @@ public class StatsClient {
             final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             Type userType = new TypeToken<List<ViewStats>>() {
             }.getType();
-            return gson.fromJson(response.body(), userType);
+            if (HttpStatus.valueOf(response.statusCode()).is2xxSuccessful()) {
+                return gson.fromJson(response.body(), userType);
+            } else {
+                throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
+            }
         } catch (IOException | InterruptedException e) {
             throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
         }
