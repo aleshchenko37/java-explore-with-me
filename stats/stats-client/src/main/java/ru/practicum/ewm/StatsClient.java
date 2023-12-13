@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.ewm.dto.EndpointHit;
@@ -33,7 +32,7 @@ public class StatsClient {
         this.serverUrl = serverUrl;
     }
 
-    public ResponseEntity<EndpointHit> saveHit(EndpointHit endpointHitDto) {
+    public EndpointHit saveHit(EndpointHit endpointHitDto) {
         URI uri = URI.create(serverUrl + "/hit");
         final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(gson.toJson(endpointHitDto));
         HttpRequest request = HttpRequest.newBuilder()
@@ -43,13 +42,13 @@ public class StatsClient {
                 .build();
         try {
             final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return ResponseEntity.ok(gson.fromJson(response.body(), EndpointHit.class));
+            return gson.fromJson(response.body(), EndpointHit.class);
         } catch (IOException | InterruptedException e) {
             throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
         }
     }
 
-    public ResponseEntity<List<ViewStats>> getAllStats(String start, String end,
+    public List<ViewStats> getAllStats(String start, String end,
                                        List<String> uris, Boolean unique) {
         URI uri = UriComponentsBuilder.fromUriString(serverUrl)
                 .path("/stats")
@@ -70,7 +69,7 @@ public class StatsClient {
             final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             Type userType = new TypeToken<List<ViewStats>>() {
             }.getType();
-            return ResponseEntity.ok(gson.fromJson(response.body(), userType));
+            return gson.fromJson(response.body(), userType);
         } catch (IOException | InterruptedException e) {
             throw new ClientException("Ошибка в клиенте статистики при выполнении запроса: " + request);
         }
