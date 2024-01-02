@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.category.service.CatService;
+import ru.practicum.ewm.category.service.CategoryService;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -15,9 +15,9 @@ import java.util.List;
 @RequestMapping("/categories")
 @RequiredArgsConstructor
 @Slf4j
-public class CatController {
+public class CategoryController {
 
-    private final CatService publicService;
+    private final CategoryService publicService;
 
     @GetMapping
     public ResponseEntity<List<CategoryDto>> getAllCategories(

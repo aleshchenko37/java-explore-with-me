@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
-import ru.practicum.ewm.user.service.UserService;
+import ru.practicum.ewm.user.service.UserAdminService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -19,9 +19,9 @@ import java.util.List;
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController {
+public class UserAdminController {
 
-    private final UserService userService;
+    private final UserAdminService userService;
 
     @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(

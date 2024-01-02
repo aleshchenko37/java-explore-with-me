@@ -14,7 +14,7 @@ import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
-import ru.practicum.ewm.compilation.service.CompServiceImpl;
+import ru.practicum.ewm.compilation.service.CompilationServiceImpl;
 import ru.practicum.ewm.util.UtilService;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CompPublicServiceImplTest {
+class CompilationPublicServiceImplTest {
 
     @Mock
     private CompilationRepository compilationRepository;
@@ -34,7 +34,7 @@ class CompPublicServiceImplTest {
     private UtilService utilService;
 
     @InjectMocks
-    private CompServiceImpl compService;
+    private CompilationServiceImpl compService;
 
     @Test
     @DisplayName("получены все подборки, когда вызваны, то получен непустой список")

@@ -5,7 +5,7 @@ import ru.practicum.ewm.user.dto.UserDto;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserAdminService {
 
     List<UserDto> getAllUsers(List<Long> ids, Integer from, Integer size);
 

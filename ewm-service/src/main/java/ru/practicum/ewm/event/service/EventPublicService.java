@@ -16,8 +16,4 @@ public interface EventPublicService {
 
     EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 
-    List<EventShortDto> getAllEventsByLocation(
-            Long locId, LocalDateTime rangeStart, LocalDateTime rangeEnd,
-            Integer from, Integer size, HttpServletRequest request);
-
 }
