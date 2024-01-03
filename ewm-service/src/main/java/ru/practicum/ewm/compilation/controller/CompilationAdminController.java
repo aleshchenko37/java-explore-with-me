@@ -3,7 +3,6 @@ package ru.practicum.ewm.compilation.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
@@ -23,10 +22,11 @@ public class CompilationAdminController {
 
     @PostMapping
     @Validated
-    public ResponseEntity<CompilationDto> saveCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public CompilationDto saveCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
         CompilationDto compilationDto = adminService.saveCompilation(newCompilationDto);
         log.info("Добавлена новая подборка: {}.", compilationDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(compilationDto);
+        return compilationDto;
     }
 
     @DeleteMapping("/{compId}")
@@ -38,11 +38,12 @@ public class CompilationAdminController {
 
     @PatchMapping("/{compId}")
     @Validated
-    public ResponseEntity<CompilationDto> updateCompilation(
+    @ResponseStatus(HttpStatus.OK)
+    public CompilationDto updateCompilation(
             @PathVariable Long compId, @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
         CompilationDto compilationDto = adminService.updateCompilation(compId, updateCompilationRequest);
         log.info("Обновлена информация о подборке с id = {}: {}.", compId, updateCompilationRequest);
-        return ResponseEntity.ok(compilationDto);
+        return compilationDto;
     }
 
 }

@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
+import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.util.UtilService;
+import ru.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;
 
@@ -19,7 +20,6 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final UtilService utilService;
 
     @Override
     public List<CategoryDto> getAllCategories(Integer from, Integer size) {
@@ -30,7 +30,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategoryById(Long catId) {
-        return CategoryMapper.toCategoryDto(utilService.returnCategory(catId));
+        return CategoryMapper.toCategoryDto(returnCategory(catId));
     }
 
+    private Category returnCategory(Long catId) {
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException("Категория с id = " + catId + " не найден."));
+    }
 }

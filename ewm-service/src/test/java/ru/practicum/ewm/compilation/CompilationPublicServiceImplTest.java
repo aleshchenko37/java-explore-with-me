@@ -15,9 +15,9 @@ import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
 import ru.practicum.ewm.compilation.service.CompilationServiceImpl;
-import ru.practicum.ewm.util.UtilService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -30,8 +30,6 @@ class CompilationPublicServiceImplTest {
 
     @Mock
     private CompilationRepository compilationRepository;
-    @Mock
-    private UtilService utilService;
 
     @InjectMocks
     private CompilationServiceImpl compService;
@@ -58,12 +56,12 @@ class CompilationPublicServiceImplTest {
     void getCompilationById_whenCompilationFound_thenReturnedCompilation() {
         long compId = 0L;
         Compilation expectedCompilation = new Compilation();
-        when(utilService.returnCompilation(anyLong())).thenReturn(expectedCompilation);
+        when(compilationRepository.findById(anyLong())).thenReturn(Optional.of(expectedCompilation));
 
         CompilationDto actualCompilation = compService.getCompilationById(compId);
 
         assertThat(CompilationMapper.toCompilationDto(expectedCompilation), equalTo(actualCompilation));
-        verify(utilService, times(1)).returnCompilation(anyLong());
+        verify(compilationRepository, times(1)).findById(anyLong());
     }
 
 }

@@ -7,13 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotSaveException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
-import ru.practicum.ewm.util.UtilService;
 
 import java.util.List;
 
@@ -23,7 +23,6 @@ import java.util.List;
 public class UserAdminServiceImpl implements UserAdminService {
 
     private final UserRepository userRepository;
-    private final UtilService utilService;
 
     @Transactional(readOnly = true)
     @Override
@@ -51,8 +50,12 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public void deleteUserById(Long userId) {
-        utilService.returnUser(userId);
+        returnUser(userId);
         userRepository.deleteById(userId);
     }
 
+    private User returnUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден."));
+    }
 }

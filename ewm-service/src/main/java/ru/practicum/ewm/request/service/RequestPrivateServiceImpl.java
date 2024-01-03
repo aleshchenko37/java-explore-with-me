@@ -14,7 +14,7 @@ import ru.practicum.ewm.request.model.ParticipationRequest;
 import ru.practicum.ewm.request.model.StateRequest;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
-import ru.practicum.ewm.util.UtilService;
+import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,20 +26,20 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
 
     private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
-    private final UtilService utilService;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Override
     public List<ParticipationRequestDto> getAllRequestsByUser(Long userId) {
-        utilService.returnUser(userId);
+        returnUser(userId);
         return ParticipationRequestMapper.convertParticipationRequestToDtoList(
                 requestRepository.findAllByRequesterId(userId));
     }
 
     @Override
     public ParticipationRequestDto saveRequest(Long userId, Long eventId) {
-        User requester = utilService.returnUser(userId);
-        Event event = utilService.returnEvent(eventId);
+        User requester = returnUser(userId);
+        Event event = returnEvent(eventId);
 
         if (requestRepository.countByRequesterIdAndEventId(userId, eventId) != 0) {
             throw new ConflictException(String.format("Нельзя добавить повторный запрос, " +
@@ -80,8 +80,8 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
 
     @Override
     public ParticipationRequestDto updateRequest(Long userId, Long requestId) {
-        utilService.returnUser(userId);
-        ParticipationRequest participationRequest = utilService.returnRequest(requestId);
+        returnUser(userId);
+        ParticipationRequest participationRequest = returnRequest(requestId);
 
         if (!participationRequest.getRequester().getId().equals(userId)) {
             throw new NotFoundException(String.format("Можно отменить только свой запрос на участие, " +
@@ -93,4 +93,18 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
                 requestRepository.saveAndFlush(participationRequest));
     }
 
+    private ParticipationRequest returnRequest(Long requestId) {
+        return requestRepository.findById(requestId).orElseThrow(() ->
+                new NotFoundException("Запрос на участие с идентификатором " + requestId + " не найден."));
+    }
+
+    private User returnUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден."));
+    }
+
+    private Event returnEvent(Long eventId) {
+        return eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Событие с идентификатором " + eventId + " не найдено."));
+    }
 }

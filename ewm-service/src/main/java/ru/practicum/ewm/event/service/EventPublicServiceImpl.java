@@ -19,11 +19,11 @@ import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.request.model.StateRequest;
 import ru.practicum.ewm.request.repository.RequestRepository;
-import ru.practicum.ewm.util.Statistic;
-import ru.practicum.ewm.util.UtilService;
+import ru.practicum.ewm.statistic.Statistic;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,7 +37,6 @@ public class EventPublicServiceImpl implements EventPublicService {
 
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final UtilService utilService;
     private final Statistic statistic;
 
     @Override
@@ -77,7 +76,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                 statistic.statsClient.saveHit(endpointHit);
             }
         }
-        Map<Long, Long> views = utilService.returnMapViewStats(events, rangeStart, rangeEnd);
+        Map<Long, Long> views = returnMapViewStats(events, rangeStart, rangeEnd);
         List<EventShortDto> eventShortDtos = EventMapper.convertEventListToEventShortDtoList(events);
 
         eventShortDtos.stream()
@@ -94,7 +93,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
     @Override
     public EventFullDto getPublicEventById(Long eventId, HttpServletRequest request) {
-        Event event = utilService.returnEvent(eventId);
+        Event event = returnEvent(eventId);
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new NotFoundException("Cобытие с id = " + eventId + " должно быть опубликовано.");
         }
@@ -119,4 +118,23 @@ public class EventPublicServiceImpl implements EventPublicService {
         return eventFullDto;
     }
 
+    private Map<Long, Long> returnMapViewStats(List<Event> events, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+        List<ViewStats> viewStatList = statistic.statsClient.getAllStats(rangeStart.format(FORMATTER_FOR_DATETIME),
+                rangeEnd.format(FORMATTER_FOR_DATETIME), uris, true);
+
+        Map<Long, Long> views = new HashMap<>();
+        for (ViewStats viewStats : viewStatList) {
+            Long id = Long.parseLong(viewStats.getUri().split("/events/")[1]);
+            views.put(id, views.getOrDefault(id, 0L) + 1);
+        }
+        return views;
+    }
+
+    private Event returnEvent(Long eventId) {
+        return eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Событие с идентификатором " + eventId + " не найдено."));
+    }
 }

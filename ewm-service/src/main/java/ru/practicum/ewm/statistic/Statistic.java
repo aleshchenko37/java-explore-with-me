@@ -1,4 +1,4 @@
-package ru.practicum.ewm.util;
+package ru.practicum.ewm.statistic;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

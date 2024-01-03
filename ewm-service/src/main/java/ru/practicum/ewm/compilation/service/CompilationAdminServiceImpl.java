@@ -13,8 +13,8 @@ import ru.practicum.ewm.compilation.repository.CompilationRepository;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotSaveException;
-import ru.practicum.ewm.util.UtilService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,6 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    private final UtilService utilService;
 
     @Override
     public CompilationDto saveCompilation(NewCompilationDto newCompilationDto) {
@@ -46,7 +45,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
 
     @Override
     public void deleteCompilationById(Long compId) {
-        utilService.returnCompilation(compId);
+        returnCompilation(compId);
         try {
             compilationRepository.deleteById(compId);
         } catch (DataIntegrityViolationException e) {
@@ -56,7 +55,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
 
     @Override
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) {
-        Compilation compilation = utilService.returnCompilation(compId);
+        Compilation compilation = returnCompilation(compId);
 
         if (updateCompilationRequest.getEvents() != null) {
             List<Event> events = new ArrayList<>(eventRepository.findAllById(updateCompilationRequest.getEvents()));
@@ -75,6 +74,11 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             throw new NotSaveException("Подборка событий с id = " + compId +
                     " не была обновлена: " + updateCompilationRequest);
         }
+    }
+
+    private Compilation returnCompilation(Long compId) {
+        return compilationRepository.findById(compId).orElseThrow(() ->
+                new NotFoundException("Подборка событий с идентификатором " + compId + " не найдена."));
     }
 
 }

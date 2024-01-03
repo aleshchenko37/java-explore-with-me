@@ -3,7 +3,8 @@ package ru.practicum.ewm.event.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -27,7 +28,9 @@ public class EventPublicController {
     private final EventPublicService publicService;
 
     @GetMapping
-    public ResponseEntity<List<EventShortDto>> getAllEvents(
+    @Validated
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventShortDto> getAllEvents(
             @RequestParam(defaultValue = "") String text,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
@@ -44,15 +47,16 @@ public class EventPublicController {
         log.info("Получен список событий с возможностью фильтрации, text = {}, categories = {}, paid = {}, " +
                         "rangeStart = {}, rangeEnd = {}, onlyAvailable = {}, sort = {}, from = {}, size = {}.",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        return ResponseEntity.ok().body(eventDtos);
+        return eventDtos;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventFullDto> getEventById(@PathVariable Long id, HttpServletRequest request) {
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request) {
         EventFullDto eventFullDto = publicService.getPublicEventById(id, request);
         log.info("Получено событие, добавленное текущим пользователем, с id = {}: {}.",
                 id, eventFullDto);
-        return ResponseEntity.ok(eventFullDto);
+        return eventFullDto;
     }
 
 }

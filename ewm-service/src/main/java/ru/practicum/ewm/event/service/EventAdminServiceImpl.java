@@ -8,6 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
+import ru.practicum.ewm.category.repository.CategoryRepository;
+import ru.practicum.ewm.dto.ViewStats;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -17,16 +19,23 @@ import ru.practicum.ewm.event.model.StateEvent;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.BadRequestException;
 import ru.practicum.ewm.exception.ConflictException;
+import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotSaveException;
+import ru.practicum.ewm.location.dto.LocationDto;
+import ru.practicum.ewm.location.mapper.LocationMapper;
 import ru.practicum.ewm.location.model.Location;
+import ru.practicum.ewm.location.repository.LocationRepository;
 import ru.practicum.ewm.request.model.StateRequest;
 import ru.practicum.ewm.request.repository.RequestRepository;
-import ru.practicum.ewm.util.UtilService;
+import ru.practicum.ewm.statistic.Statistic;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static util.Constants.FORMATTER_FOR_DATETIME;
 
 @Service
 @Transactional
@@ -35,7 +44,9 @@ public class EventAdminServiceImpl implements EventAdminService {
 
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final UtilService utilService;
+    private final CategoryRepository categoryRepository;
+    private final LocationRepository locationRepository;
+    private final Statistic statistic;
 
     @Transactional(readOnly = true)
     @Override
@@ -54,7 +65,7 @@ public class EventAdminServiceImpl implements EventAdminService {
 
         List<Event> events = eventRepository.getAllEventsByAdmin(users, states,
                 categories, rangeStart, rangeEnd, page);
-        Map<Long, Long> views = utilService.returnMapViewStats(events, rangeStart, rangeEnd);
+        Map<Long, Long> views = returnMapViewStats(events, rangeStart, rangeEnd);
         List<EventFullDto> eventFullDtos = EventMapper.convertEventListToEventFullDtoList(events);
 
         eventFullDtos = eventFullDtos.stream()
@@ -68,12 +79,12 @@ public class EventAdminServiceImpl implements EventAdminService {
 
     @Override
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        Event event = utilService.returnEvent(eventId);
+        Event event = returnEvent(eventId);
         if (updateEventAdminRequest.getAnnotation() != null) {
             event.setAnnotation(updateEventAdminRequest.getAnnotation());
         }
         if (updateEventAdminRequest.getCategory() != null) {
-            Category category = utilService.returnCategory(updateEventAdminRequest.getCategory());
+            Category category = returnCategory(updateEventAdminRequest.getCategory());
             event.setCategory(category);
         }
         if (updateEventAdminRequest.getDescription() != null) {
@@ -86,7 +97,7 @@ public class EventAdminServiceImpl implements EventAdminService {
                     eventId, updateEventAdminRequest));
         }
         if (updateEventAdminRequest.getLocation() != null) {
-            Location location = utilService.returnLocation(updateEventAdminRequest.getLocation());
+            Location location = returnLocation(updateEventAdminRequest.getLocation());
             event.setLocation(location);
         }
         if (updateEventAdminRequest.getPaid() != null) {
@@ -134,4 +145,37 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
     }
 
+    private Event returnEvent(Long eventId) {
+        return eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Событие с идентификатором " + eventId + " не найдено."));
+    }
+
+    private Category returnCategory(Long catId) {
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException("Категория с id = " + catId + " не найден."));
+    }
+
+    @Transactional
+    private Location returnLocation(LocationDto locationDto) {
+        locationDto.setRadius(0f);
+        Location location = locationRepository
+                .findByLatAndLonAndRadius(locationDto.getLat(), locationDto.getLon(), 0f);
+        return location != null ? location
+                : locationRepository.save(LocationMapper.toLocation(locationDto));
+    }
+
+    private Map<Long, Long> returnMapViewStats(List<Event> events, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+        List<ViewStats> viewStatList = statistic.statsClient.getAllStats(rangeStart.format(FORMATTER_FOR_DATETIME),
+                rangeEnd.format(FORMATTER_FOR_DATETIME), uris, true);
+
+        Map<Long, Long> views = new HashMap<>();
+        for (ViewStats viewStats : viewStatList) {
+            Long id = Long.parseLong(viewStats.getUri().split("/events/")[1]);
+            views.put(id, views.getOrDefault(id, 0L) + 1);
+        }
+        return views;
+    }
 }

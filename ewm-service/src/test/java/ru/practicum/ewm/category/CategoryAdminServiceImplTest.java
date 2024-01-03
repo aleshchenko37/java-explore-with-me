@@ -15,7 +15,8 @@ import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.category.service.CategoryAdminServiceImpl;
 import ru.practicum.ewm.exception.NotSaveException;
-import ru.practicum.ewm.util.UtilService;
+
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,8 +28,6 @@ class CategoryAdminServiceImplTest {
 
     @Mock
     private CategoryRepository categoryRepository;
-    @Mock
-    private UtilService utilService;
 
     @InjectMocks
     private CategoryAdminServiceImpl adminService;
@@ -67,14 +66,14 @@ class CategoryAdminServiceImplTest {
     @DisplayName("удалена категория, когда вызвано, тогда она удаляется")
     void deleteCategory_whenInvoked_thenDeletedCategory() {
         Long catId = 0L;
-        when(utilService.returnCategory(anyLong())).thenReturn(new Category());
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(new Category()));
         when(categoryRepository.deleteByIdWithReturnedLines(anyLong())).thenReturn(1);
 
         Boolean actualResult = adminService.deleteCategoryById(catId);
 
         assertThat(true, equalTo(actualResult));
-        InOrder inOrder = inOrder(utilService, categoryRepository);
-        inOrder.verify(utilService, times(1)).returnCategory(catId);
+        InOrder inOrder = inOrder(categoryRepository);
+        inOrder.verify(categoryRepository, times(1)).findById(catId);
         inOrder.verify(categoryRepository, times(1)).deleteByIdWithReturnedLines(anyLong());
     }
 
@@ -84,7 +83,7 @@ class CategoryAdminServiceImplTest {
         Long catId = 0L;
         Category oldCategory = new Category();
         oldCategory.setName("1");
-        when(utilService.returnCategory(anyLong())).thenReturn(oldCategory);
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(oldCategory));
 
         Category newCategory = new Category();
         newCategory.setName("2");
@@ -94,8 +93,8 @@ class CategoryAdminServiceImplTest {
                 .updateCategory(catId, CategoryMapper.toCategoryDto(newCategory));
 
         assertThat(newCategory.getName(), equalTo(actualCategory.getName()));
-        InOrder inOrder = inOrder(utilService, categoryRepository);
-        inOrder.verify(utilService, times(1)).returnCategory(anyLong());
+        InOrder inOrder = inOrder(categoryRepository);
+        inOrder.verify(categoryRepository, times(1)).findById(anyLong());
         inOrder.verify(categoryRepository, times(1)).saveAndFlush(any(Category.class));
     }
 

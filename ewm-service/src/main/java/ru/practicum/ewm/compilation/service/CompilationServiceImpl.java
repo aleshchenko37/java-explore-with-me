@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.mapper.CompilationMapper;
+import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
-import ru.practicum.ewm.util.UtilService;
+import ru.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;
 
@@ -19,7 +20,6 @@ import java.util.List;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
-    private final UtilService utilService;
 
     @Override
     public List<CompilationDto> getAllCompilations(Boolean pinned, Integer from, Integer size) {
@@ -36,7 +36,12 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto getCompilationById(Long compId) {
-        return CompilationMapper.toCompilationDto(utilService.returnCompilation(compId));
+        return CompilationMapper.toCompilationDto(returnCompilation(compId));
+    }
+
+    private Compilation returnCompilation(Long compId) {
+        return compilationRepository.findById(compId).orElseThrow(() ->
+                new NotFoundException("Подборка событий с идентификатором " + compId + " не найдена."));
     }
 
 }
