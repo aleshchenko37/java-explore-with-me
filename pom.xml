@@ -10,21 +10,24 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
+	<name>Explore With Me</name>
+	<modules>
+		<module>ewm-service</module>
+		<module>stats</module>
+		<module>stats/stats-client</module>
+		<module>stats/stats-server</module>
+		<module>stats/stats-dto</module>
+	</modules>
+
 	<groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Explore With Me</name>
-
 	<properties>
 		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
-	<modules>
-		<module>stats</module>
-	</modules>
 
 	<build>
 		<pluginManagement>
