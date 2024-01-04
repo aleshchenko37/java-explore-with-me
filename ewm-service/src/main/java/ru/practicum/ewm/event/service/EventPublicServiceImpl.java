@@ -151,7 +151,7 @@ public class EventPublicServiceImpl implements EventPublicService {
             rangeEnd = LocalDateTime.now().plusYears(100);
         }
 
-        /*List<Event> events = eventRepository.getAllEventsByLocation(location.getLat(), location.getLon(),
+        List<Event> events = eventRepository.getAllEventsByLocation(location.getLat(), location.getLon(),
                 location.getRadius(), rangeStart, rangeEnd, page);
         if (events != null) {
             for (Event event : events) {
@@ -168,7 +168,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                         requestRepository.countByEventIdAndStatus(dto.getId(), StateRequest.CONFIRMED)))
                 .peek(dto -> dto.setViews(views.getOrDefault(dto.getId(), 0L)))
                 .collect(Collectors.toList());
-*/
+
         return new ArrayList<>();
     }
 
