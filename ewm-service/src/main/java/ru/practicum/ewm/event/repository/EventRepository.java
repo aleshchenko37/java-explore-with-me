@@ -53,7 +53,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "from Event e " +
             "where (e.state = 'PUBLISHED') " +
             "and (function('distance', e.location.lat, e.location.lon, :lat, :lon) <= :radius) " +
-            "and (e.eventDate BETWEEN :rangeStart AND :rangeEnd) ")
+            "and (e.eventDate BETWEEN :rangeStart AND :rangeEnd)")
     List<Event> getAllEventsByLocation(
             @Param("lat") Float lat,
             @Param("lon") Float lon,
