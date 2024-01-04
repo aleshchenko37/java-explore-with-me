@@ -49,10 +49,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("onlyAvailable") Boolean onlyAvailable,
             Pageable page);
 
-    @Query("SELECT e FROM Event e " +
-            "WHERE FUNCTION('distance', :lat, :lon, e.location.lat, e.location.lon) " +
-            "<= :rad " +
-            "AND e.state = :state ")
+    @Query("select e " +
+            "from Event e " +
+            "where (e.state = 'PUBLISHED') " +
+            "and (e.eventDate BETWEEN :rangeStart AND :rangeEnd) ")
     List<Event> getAllEventsByLocation(
             @Param("lat") Float lat,
             @Param("lon") Float lon,
