@@ -25,7 +25,6 @@ import ru.practicum.ewm.statistic.Statistic;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +168,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                 .peek(dto -> dto.setViews(views.getOrDefault(dto.getId(), 0L)))
                 .collect(Collectors.toList());
 
-        return new ArrayList<>();
+        return eventShortDtos;
     }
 
     private Map<Long, Long> returnMapViewStats(List<Event> events, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
