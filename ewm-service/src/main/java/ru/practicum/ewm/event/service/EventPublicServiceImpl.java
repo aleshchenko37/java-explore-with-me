@@ -82,7 +82,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         List<Event> events = eventRepository.getAllEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, page);
-        if (!events.isEmpty()) {
+        if (events != null) {
             for (Event event : events) {
                 endpointHit.setUri("/events/" + event.getId());
                 endpointHit.setTimestamp(LocalDateTime.now());
@@ -259,7 +259,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         List<Event> events = eventRepository.getAllEventsByLocation(location.getLat(), location.getLon(),
                 location.getRadius(), rangeStart, rangeEnd, page);
-        if (!events.isEmpty()) {
+        if (events != null) {
             for (Event event : events) {
                 endpointHit.setUri("/events/" + event.getId());
                 endpointHit.setTimestamp(LocalDateTime.now());
