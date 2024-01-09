@@ -59,4 +59,22 @@ public class EventPublicController {
         return eventFullDto;
     }
 
+    @GetMapping("/locations/{locId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Validated
+    public List<EventShortDto> getAllEventsByLocation(
+            @PathVariable Long locId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime rangeStart,
+            @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime rangeEnd,
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+            @Positive @RequestParam(name = "size", defaultValue = "10") Integer size,
+            HttpServletRequest request) {
+
+        List<EventShortDto> eventDtos = publicService.getAllEventsByLocation(
+                locId, rangeStart, rangeEnd, from, size, request);
+        log.info("Получен список событий в конкретной локации, locId = {}, rangeStart = {}, rangeEnd = {}, " +
+                "from = {}, size = {}.", locId, rangeStart, rangeEnd, from, size);
+        return eventDtos;
+    }
+
 }
