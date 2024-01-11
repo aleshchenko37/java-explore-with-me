@@ -152,7 +152,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         List<Event> events = eventRepository.getAllEventsByLocation(location.getLat(), location.getLon(),
                 location.getRadius(), rangeStart, rangeEnd, page);
-        if (events != null) {
+        if (!events.isEmpty()) {
             for (Event event : events) {
                 endpointHit.setUri("/events/" + event.getId());
                 endpointHit.setTimestamp(LocalDateTime.now());
