@@ -1,23 +1,31 @@
 package ru.practicum.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.dto.EndpointHit;
 import ru.practicum.ewm.dto.ViewStats;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
+import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.SortSearch;
+import ru.practicum.ewm.event.model.StateActionAdmin;
 import ru.practicum.ewm.event.model.StateEvent;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.exception.BadRequestException;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.exception.NotSaveException;
+import ru.practicum.ewm.location.dto.LocationDto;
+import ru.practicum.ewm.location.mapper.LocationMapper;
 import ru.practicum.ewm.location.model.Location;
 import ru.practicum.ewm.location.repository.LocationRepository;
 import ru.practicum.ewm.request.model.StateRequest;
@@ -43,6 +51,74 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final Statistic statistic;
+
+    @Override
+    public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
+        Event event = returnEvent(eventId);
+        if (updateEventAdminRequest.getAnnotation() != null) {
+            event.setAnnotation(updateEventAdminRequest.getAnnotation());
+        }
+        if (updateEventAdminRequest.getCategory() != null) {
+            Category category = returnCategory(updateEventAdminRequest.getCategory());
+            event.setCategory(category);
+        }
+        if (updateEventAdminRequest.getDescription() != null) {
+            event.setDescription(updateEventAdminRequest.getDescription());
+        }
+        if (updateEventAdminRequest.getEventDate() != null &&
+                LocalDateTime.now().plusHours(1).isAfter(updateEventAdminRequest.getEventDate())) {
+            throw new BadRequestException(String.format("Дата начала изменяемого события должна быть не ранее, " +
+                            "чем за час от даты публикации, eventId = %s, updateEventAdminRequest: %s.",
+                    eventId, updateEventAdminRequest));
+        }
+        if (updateEventAdminRequest.getLocation() != null) {
+            Location location = returnLocation(updateEventAdminRequest.getLocation());
+            event.setLocation(location);
+        }
+        if (updateEventAdminRequest.getPaid() != null) {
+            event.setPaid(updateEventAdminRequest.getPaid());
+        }
+        if (updateEventAdminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
+        }
+        if (updateEventAdminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
+        }
+        if (updateEventAdminRequest.getStateAction() != null) {
+            if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) &&
+                    !event.getState().equals(StateEvent.PENDING)) {
+                throw new ConflictException(String.format("Событие можно публиковать только, если оно в состоянии " +
+                                "ожидания публикации, eventId = %s, updateEventAdminRequest: %s.",
+                        eventId, updateEventAdminRequest));
+            }
+            if (updateEventAdminRequest.getStateAction().equals(StateActionAdmin.REJECT_EVENT) &&
+                    event.getState().equals(StateEvent.PUBLISHED)) {
+                throw new ConflictException(String.format("событие можно отклонить только, если оно еще " +
+                                "не опубликовано, eventId = %s, updateEventAdminRequest: %s.",
+                        eventId, updateEventAdminRequest));
+            }
+
+            switch (updateEventAdminRequest.getStateAction()) {
+                case PUBLISH_EVENT:
+                    event.setState(StateEvent.PUBLISHED);
+                    event.setPublishedOn(LocalDateTime.now());
+                    break;
+                case REJECT_EVENT:
+                    event.setState(StateEvent.CANCELED);
+                    break;
+            }
+        }
+        if (updateEventAdminRequest.getTitle() != null) {
+            event.setTitle(updateEventAdminRequest.getTitle());
+        }
+
+        try {
+            return EventMapper.toEventFullDto(eventRepository.saveAndFlush(event));
+        } catch (DataIntegrityViolationException e) {
+            throw new NotSaveException("Событие с id = " + eventId + ", не было обновлено: " +
+                    updateEventAdminRequest);
+        }
+    }
 
     @Override
     public List<EventShortDto> getAllEvents(
@@ -225,5 +301,19 @@ public class EventPublicServiceImpl implements EventPublicService {
     private Location returnLocationById(Long locId) {
         return locationRepository.findById(locId).orElseThrow(() ->
                 new NotFoundException("Локация с идентификатором " + locId + " не найдена."));
+    }
+
+    private Category returnCategory(Long catId) {
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException("Категория с id = " + catId + " не найден."));
+    }
+
+    @Transactional
+    private Location returnLocation(LocationDto locationDto) {
+        locationDto.setRadius(0f);
+        Location location = locationRepository
+                .findByLatAndLonAndRadius(locationDto.getLat(), locationDto.getLon(), 0f);
+        return location != null ? location
+                : locationRepository.save(LocationMapper.toLocation(locationDto));
     }
 }
