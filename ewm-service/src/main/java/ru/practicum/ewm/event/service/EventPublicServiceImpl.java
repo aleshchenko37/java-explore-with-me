@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import static util.Constants.FORMATTER_FOR_DATETIME;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class EventPublicServiceImpl implements EventPublicService {
 

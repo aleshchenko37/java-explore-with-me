@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.model.StateEvent;
-import ru.practicum.ewm.event.service.EventAdminService;
 import ru.practicum.ewm.event.service.EventPublicService;
 
 import javax.validation.Valid;
@@ -27,7 +26,6 @@ import static util.Constants.PATTERN_FOR_DATETIME;
 public class EventAdminController {
 
     private final EventPublicService publicService;
-    private final EventAdminService adminService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
