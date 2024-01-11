@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.model.StateEvent;
-import ru.practicum.ewm.event.service.EventPublicService;
+import ru.practicum.ewm.event.service.EventAdminService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -25,7 +25,7 @@ import static util.Constants.PATTERN_FOR_DATETIME;
 @Slf4j
 public class EventAdminController {
 
-    private final EventPublicService publicService;
+    private final EventAdminService adminService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -38,7 +38,7 @@ public class EventAdminController {
             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime rangeEnd,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
             @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        List<EventFullDto> eventDtos = publicService.getAllEventsByAdmin(
+        List<EventFullDto> eventDtos = adminService.getAllEventsByAdmin(
                 users, states, categories, rangeStart, rangeEnd, from, size);
         log.info("Получен список событий, users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, " +
                 "from = {}, size = {}.", users, states, categories, rangeStart, rangeEnd, from, size);
@@ -51,7 +51,7 @@ public class EventAdminController {
     public EventFullDto updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        EventFullDto eventFullDto = publicService.updateEventByAdmin(eventId, updateEventAdminRequest);
+        EventFullDto eventFullDto = adminService.updateEventByAdmin(eventId, updateEventAdminRequest);
         log.info("Обновлено событие админом, с id = {}: {}.", eventId, eventFullDto);
         return eventFullDto;
     }

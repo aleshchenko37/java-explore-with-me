@@ -41,6 +41,15 @@ class LocationRepositoryTest extends BaseDataJpaTest {
         locationRepository.deleteAll();
     }
 
+
+    @Test
+    void findByLatAndLonAndRadius() {
+    }
+
+    @Test
+    void deleteByIdWithReturnedLines() {
+    }
+
     @Test
     @DisplayName("получены все локации с радиусом больше указанного, когда вызвана, " +
             "то получен список локаций")
