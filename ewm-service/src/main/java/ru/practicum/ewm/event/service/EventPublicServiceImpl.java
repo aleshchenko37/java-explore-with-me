@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.dto.EndpointHit;
 import ru.practicum.ewm.dto.ViewStats;
 import ru.practicum.ewm.event.dto.EventFullDto;
@@ -40,6 +41,7 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final LocationRepository locationRepository;
+    private final CategoryRepository categoryRepository;
     private final Statistic statistic;
 
     @Override
@@ -72,7 +74,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         List<Event> events = eventRepository.getAllEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, page);
-        if (events != null) {
+        if (!events.isEmpty()) {
             for (Event event : events) {
                 endpointHit.setUri("/events/" + event.getId());
                 endpointHit.setTimestamp(LocalDateTime.now());

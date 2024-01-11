@@ -2,9 +2,6 @@ package ru.practicum.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
@@ -25,7 +22,6 @@ import ru.practicum.ewm.location.dto.LocationDto;
 import ru.practicum.ewm.location.mapper.LocationMapper;
 import ru.practicum.ewm.location.model.Location;
 import ru.practicum.ewm.location.repository.LocationRepository;
-import ru.practicum.ewm.request.model.StateRequest;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.statistic.Statistic;
 
@@ -47,35 +43,6 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final CategoryRepository categoryRepository;
     private final LocationRepository locationRepository;
     private final Statistic statistic;
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<EventFullDto> getAllEventsByAdmin(
-            List<Long> users, List<StateEvent> states, List<Long> categories,
-            LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
-        Pageable page = PageRequest.of(from, size, Sort.by(Sort.Direction.ASC, "id"));
-
-        if (rangeStart == null) {
-            rangeStart = LocalDateTime.now();
-        }
-
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.now().plusYears(100);
-        }
-
-        List<Event> events = eventRepository.getAllEventsByAdmin(users, states,
-                categories, rangeStart, rangeEnd, page);
-        Map<Long, Long> views = returnMapViewStats(events, rangeStart, rangeEnd);
-        List<EventFullDto> eventFullDtos = EventMapper.convertEventListToEventFullDtoList(events);
-
-        eventFullDtos = eventFullDtos.stream()
-                .peek(dto -> dto.setConfirmedRequests(
-                        requestRepository.countByEventIdAndStatus(dto.getId(), StateRequest.CONFIRMED)))
-                .peek(dto -> dto.setViews(views.getOrDefault(dto.getId(), 0L)))
-                .collect(Collectors.toList());
-
-        return eventFullDtos;
-    }
 
     @Override
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
