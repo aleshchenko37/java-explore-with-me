@@ -10,6 +10,7 @@ import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.model.StateEvent;
 import ru.practicum.ewm.event.service.EventAdminService;
+import ru.practicum.ewm.event.service.EventPublicService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -26,6 +27,8 @@ import static util.Constants.PATTERN_FOR_DATETIME;
 public class EventAdminController {
 
     private final EventAdminService adminService;
+    private final EventPublicService publicService;
+
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -38,7 +41,7 @@ public class EventAdminController {
             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime rangeEnd,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
             @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        List<EventFullDto> eventDtos = adminService.getAllEventsByAdmin(
+        List<EventFullDto> eventDtos = publicService.getAllEventsByAdmin(
                 users, states, categories, rangeStart, rangeEnd, from, size);
         log.info("Получен список событий, users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, " +
                 "from = {}, size = {}.", users, states, categories, rangeStart, rangeEnd, from, size);

@@ -94,6 +94,35 @@ public class EventPublicServiceImpl implements EventPublicService {
         return eventShortDtos;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<EventFullDto> getAllEventsByAdmin(
+            List<Long> users, List<StateEvent> states, List<Long> categories,
+            LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
+        Pageable page = PageRequest.of(from, size, Sort.by(Sort.Direction.ASC, "id"));
+
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+        }
+
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.now().plusYears(100);
+        }
+
+        List<Event> events = eventRepository.getAllEventsByAdmin(users, states,
+                categories, rangeStart, rangeEnd, page);
+        Map<Long, Long> views = returnMapViewStats(events, rangeStart, rangeEnd);
+        List<EventFullDto> eventFullDtos = EventMapper.convertEventListToEventFullDtoList(events);
+
+        eventFullDtos = eventFullDtos.stream()
+                .peek(dto -> dto.setConfirmedRequests(
+                        requestRepository.countByEventIdAndStatus(dto.getId(), StateRequest.CONFIRMED)))
+                .peek(dto -> dto.setViews(views.getOrDefault(dto.getId(), 0L)))
+                .collect(Collectors.toList());
+
+        return eventFullDtos;
+    }
+
     @Override
     public EventFullDto getPublicEventById(Long eventId, HttpServletRequest request) {
         Event event = returnEvent(eventId);
