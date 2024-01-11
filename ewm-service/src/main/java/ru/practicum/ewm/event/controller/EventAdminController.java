@@ -29,7 +29,6 @@ public class EventAdminController {
     private final EventPublicService publicService;
     private final EventAdminService adminService;
 
-
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Validated
@@ -54,7 +53,7 @@ public class EventAdminController {
     public EventFullDto updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        EventFullDto eventFullDto = adminService.updateEventByAdmin(eventId, updateEventAdminRequest);
+        EventFullDto eventFullDto = publicService.updateEventByAdmin(eventId, updateEventAdminRequest);
         log.info("Обновлено событие админом, с id = {}: {}.", eventId, eventFullDto);
         return eventFullDto;
     }
