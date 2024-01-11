@@ -40,7 +40,7 @@ public class EventAdminController {
             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN_FOR_DATETIME) LocalDateTime rangeEnd,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
             @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        List<EventFullDto> eventDtos = adminService.getAllEventsByAdmin(
+        List<EventFullDto> eventDtos = publicService.getAllEventsByAdmin(
                 users, states, categories, rangeStart, rangeEnd, from, size);
         log.info("Получен список событий, users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, " +
                 "from = {}, size = {}.", users, states, categories, rangeStart, rangeEnd, from, size);
@@ -53,7 +53,7 @@ public class EventAdminController {
     public EventFullDto updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        EventFullDto eventFullDto = publicService.updateEventByAdmin(eventId, updateEventAdminRequest);
+        EventFullDto eventFullDto = adminService.updateEventByAdmin(eventId, updateEventAdminRequest);
         log.info("Обновлено событие админом, с id = {}: {}.", eventId, eventFullDto);
         return eventFullDto;
     }
