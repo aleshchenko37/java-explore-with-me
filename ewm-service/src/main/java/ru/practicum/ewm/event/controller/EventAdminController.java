@@ -53,7 +53,7 @@ public class EventAdminController {
     public EventFullDto updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        EventFullDto eventFullDto = adminService.updateEventByAdmin(eventId, updateEventAdminRequest);
+        EventFullDto eventFullDto = publicService.updateEventByAdmin(eventId, updateEventAdminRequest);
         log.info("Обновлено событие админом, с id = {}: {}.", eventId, eventFullDto);
         return eventFullDto;
     }
